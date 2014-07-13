@@ -34,7 +34,7 @@ public abstract class KAutoCompleter {
     private final Font font;
     private static Boolean blockOthers = false;
     private int column = -1;
-    private KreadiTable table=null;
+    private KTable table=null;
 
     public static boolean isBlockOthers() {
         synchronized (blockOthers) {
@@ -103,7 +103,7 @@ public abstract class KAutoCompleter {
         });
     }
 
-    public KAutoCompleter(KreadiTable table, int column) {
+    public KAutoCompleter(KTable table, int column) {
         this.column = column;
         this.table=table;
         font = table.getFont();
