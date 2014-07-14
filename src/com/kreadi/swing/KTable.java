@@ -3,7 +3,6 @@ package com.kreadi.swing;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Font;
-import java.text.DecimalFormat;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -18,7 +17,6 @@ import javax.swing.table.TableModel;
 public class KTable extends JTable {
 
     private final DefaultTableModel dtm;
-    private DecimalFormat formatter = new DecimalFormat("#,###");
 
     /**
      * Aplica la fuente tambien a los CellEditor
@@ -67,9 +65,9 @@ public class KTable extends JTable {
             for (int i = 0; i < colClasses.length; i++) {
                 TableColumn col = tcm.getColumn(i);
                 if (editable[i]) {
-                    col.setCellEditor(new KTableCellEditor(colClasses[i], maxChars != null ? maxChars[i] : 0, regexp != null ? regexp[i] : null, formatter));
+                    col.setCellEditor(new KTableCellEditor(colClasses[i], maxChars != null ? maxChars[i] : 0, regexp != null ? regexp[i] : null, KSwingTools.decimalFormat));
                 }
-                col.setCellRenderer(new KCellRenderer(colClasses[i], formatter));
+                col.setCellRenderer(new KCellRenderer(colClasses[i], KSwingTools.decimalFormat));
             }
         }
     }
@@ -103,6 +101,12 @@ public class KTable extends JTable {
         dtm.addRow(row);
     }
 
+    public void setRow(Object[] row, int idx) {
+        for (int i = 0; i < row.length; i++) { 
+            dtm.setValueAt(row[i], idx, i);
+        }
+    }
+
     public void addRow(Object[] row, int idx) {
         dtm.insertRow(idx, row);
     }
@@ -116,7 +120,7 @@ public class KTable extends JTable {
         );
         table.addRow(new Object[]{"String1", 1});
         table.addRow(new Object[]{"String", 1});
-        table.addRow(new Object[]{"String3", null});
+        table.addRow(new Object[]{null, null});
         table.addRow(new Object[]{"String", 1});
         JScrollPane scroll = new JScrollPane();
         scroll.setViewportView(table);

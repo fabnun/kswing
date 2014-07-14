@@ -37,6 +37,8 @@ import javax.swing.table.TableColumnModel;
 
 public class KSwingTools {
 
+    public static DecimalFormat decimalFormat = new DecimalFormat("#,###");
+
     public static Font getTTFFont(URL url, int style, float size) {
         try {
             return Font.createFont(Font.TRUETYPE_FONT, url.openStream()).deriveFont(style, size);
@@ -45,7 +47,7 @@ public class KSwingTools {
             return null;
         }
     }
-    
+
     public static void addEscapeListener(final JFrame dialog) {
         ActionListener escListener = new ActionListener() {
 
