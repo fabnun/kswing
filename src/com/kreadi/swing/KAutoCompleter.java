@@ -48,8 +48,9 @@ public abstract class KAutoCompleter {
         }
     }
 
-    public KAutoCompleter(JTextComponent textComponet) {
-        font = textComponet.getFont();
+    public KAutoCompleter(final JTextComponent textComp) {
+        this.textComp=textComp;
+        font = textComp.getFont();
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -60,7 +61,6 @@ public abstract class KAutoCompleter {
             }
         });
         list.setFont(font);
-        textComp = textComponet;
         textComp.putClientProperty(AUTOCOMPLETER, this);
         scroll.setBorder(null);
         list.setFocusable(false);

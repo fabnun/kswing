@@ -105,11 +105,16 @@ public class KSwingTools {
         //TODO cuando pierda el foco se formatee
     }
 
-    public static void calendar(final JLabel field, final SimpleDateFormat sdf, String titulo, boolean allowClear) {
+    public static CalendarPane calendar(final JLabel field, final SimpleDateFormat sdf, String titulo, boolean allowClear) {
         field.setCursor(new Cursor(Cursor.HAND_CURSOR));
         final JPopupMenu menu = new JPopupMenu(titulo);
         final CalendarPane datePanel = new CalendarPane(CalendarPane.STYLE_CLASSIC);
+        datePanel.setLabel(field);
         datePanel.setShowNoneButton(allowClear);
+        try {
+            datePanel.setDate(sdf.parse(field.getText()));
+        } catch (ParseException | PropertyVetoException e) {
+        }
         try {
             Date date = new Date();
             datePanel.setDate(date);
@@ -120,7 +125,7 @@ public class KSwingTools {
 
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (e.getButton() == MouseEvent.BUTTON1) {
+                    if (datePanel.isVisible() && datePanel.isEnabled() && e.getButton() == MouseEvent.BUTTON1) {
                         try {
                             datePanel.setDate(sdf.parse(field.getText()));
                         } catch (ParseException | PropertyVetoException ex) {
@@ -146,6 +151,7 @@ public class KSwingTools {
                 }
             }
         });
+        return datePanel;
     }
 
     public static HashMap<String, Integer> getMapProperties(Component comp) {

@@ -102,7 +102,7 @@ public class KTable extends JTable {
     }
 
     public void setRow(Object[] row, int idx) {
-        for (int i = 0; i < row.length; i++) { 
+        for (int i = 0; i < row.length; i++) {
             dtm.setValueAt(row[i], idx, i);
         }
     }
@@ -111,12 +111,24 @@ public class KTable extends JTable {
         dtm.insertRow(idx, row);
     }
 
+    public Object[] getRow(int idx) {
+        Object[] row = new Object[dtm.getColumnCount()];
+        for (int i = 0; i < row.length; i++) {
+            row[i] = dtm.getValueAt(idx, i);
+        }
+        return row;
+    }
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("KTable Test");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Container pane = frame.getContentPane();
         KTable table = new KTable(
-                new String[]{"String", "Integer"}, new Class[]{String.class, Integer.class}, new boolean[]{true, true}, new int[]{16, 9}, new String[]{null, "\\d*"}
+                new String[]{"String", "Integer"},
+                new Class[]{String.class, Integer.class},
+                new boolean[]{true, true},
+                new int[]{16, 9},
+                new String[]{null, "\\d*"}
         );
         table.addRow(new Object[]{"String1", 1});
         table.addRow(new Object[]{"String", 1});
