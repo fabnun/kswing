@@ -1,10 +1,7 @@
 package com.kreadi.swing;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
+import java.awt.Component;
 import java.awt.Font;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -64,28 +61,22 @@ public class KTable extends JTable {
         if (colClasses != null) {
             for (int i = 0; i < colClasses.length; i++) {
                 TableColumn col = tcm.getColumn(i);
-                if (editable[i]) {
-                    col.setCellEditor(new KTableCellEditor(colClasses[i], maxChars != null ? maxChars[i] : 0, regexp != null ? regexp[i] : null, KSwingTools.decimalFormat));
+                if (editable != null && editable[i]) {
+                    col.setCellEditor(new KTableCellEditor(colClasses[i], maxChars != null ? maxChars[i] : 0, regexp != null ? regexp[i] : null));
                 }
                 col.setCellRenderer(new KCellRenderer(colClasses[i], KSwingTools.decimalFormat));
             }
         }
     }
 
-    public KTable(String[] colNames, final Class[] colClasses, final boolean[] editable, int[] maxChars) {
-        this(colNames, colClasses, editable, maxChars, null);
-    }
+    @Override
+    public void changeSelection(int row, int column, boolean toggle, boolean extend) {
+        super.changeSelection(row, column, toggle, extend);
 
-    public KTable(String[] colNames, final Class[] colClasses, final boolean[] editable) {
-        this(colNames, colClasses, editable, null);
-    }
-
-    public KTable(String[] colNames, final Class[] colClasses) {
-        this(colNames, colClasses, null);
-    }
-
-    public KTable(String[] colNames) {
-        this(colNames, null);
+        if (editCellAt(row, column)) {
+            Component editor = getEditorComponent();
+            editor.requestFocusInWindow();
+        }
     }
 
     @Override
@@ -118,7 +109,5 @@ public class KTable extends JTable {
         }
         return row;
     }
-
-
 
 }

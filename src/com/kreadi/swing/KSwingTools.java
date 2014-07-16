@@ -1,6 +1,7 @@
 package com.kreadi.swing;
 
 import com.michaelbaranov.microba.calendar.CalendarPane;
+import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -8,8 +9,10 @@ import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Point;
+import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -180,4 +183,33 @@ public class KSwingTools {
         }
         return map;
     }
+
+    public static void fireTab() {
+
+        try {
+            Robot robot = new Robot();
+            // Simulate a key press
+            robot.keyPress(KeyEvent.VK_TAB);
+            robot.keyRelease(KeyEvent.VK_TAB);
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void fireShiftTab() {
+
+        try {
+            Robot robot = new Robot();
+            // Simulate a key press
+            robot.keyPress(KeyEvent.VK_SHIFT);
+            robot.keyPress(KeyEvent.VK_TAB);
+            robot.keyRelease(KeyEvent.VK_TAB);
+            robot.keyRelease(KeyEvent.VK_SHIFT);
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 }

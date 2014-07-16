@@ -2,7 +2,8 @@ package com.kreadi.swing;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.text.DecimalFormat;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -17,25 +18,39 @@ public class KTableCellEditor extends AbstractCellEditor implements TableCellEdi
     public final JTextField textField;
     private final JCheckBox checkBox;
     private final Class cls;
-    private final DecimalFormat formatter;
 
     public KTableCellEditor(Class cls) {
         this(cls, 0);
     }
 
     public KTableCellEditor(Class cls, int maxChars) {
-        this(cls, maxChars, null, null);
+        this(cls, maxChars, null);
     }
 
     public KTableCellEditor(Class cls, int maxChars, String regExp) {
-        this(cls, maxChars, regExp, null);
-    }
-
-    public KTableCellEditor(Class cls, int maxChars, String regExp, DecimalFormat formatter) {
         this.cls = cls;
-        this.formatter = formatter;
         if (maxChars > 0 || regExp != null || cls != Integer.class) {
             textField = new JTextField();
+            textField.addKeyListener(new KeyAdapter() {
+
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    int code = e.getKeyCode();
+                    if (code == KeyEvent.VK_LEFT) {
+                        if (textField.getCaretPosition() == 0) {
+                            KSwingTools.fireShiftTab();
+                        }
+                    } else if (code == KeyEvent.VK_RIGHT) {
+                        int pos=textField.getCaretPosition();
+                        int max=textField.getText().length() - 1;
+                        System.out.println(pos+" "+max);
+                        if (pos >= max) {
+                            KSwingTools.fireTab();
+                        }
+                    }
+                }
+
+            });
             if (cls == Integer.class) {
                 textField.setHorizontalAlignment(JTextField.RIGHT);
             }

@@ -2,7 +2,6 @@ package com.kreadi.swing;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
@@ -10,12 +9,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -25,14 +23,14 @@ import javax.swing.text.Document;
 
 public abstract class KAutoComplete {
 
-    private final JTextField field;
+    public final JTextField field;
     private final KPlainDocument doc;
-    private final JPopupMenu dialog = new JPopupMenu();
+    private final JPopupMenu popup = new JPopupMenu();
     private final JList list = new JList();
     private final JScrollPane scroll = new JScrollPane(list);
     private int idx = -1;
-    private boolean visibleLostFocus = false;
     private String findMem = "";
+    private final JTable table;
 
     public KAutoComplete(JTextField field) {
         this.field = field;
@@ -42,102 +40,122 @@ public abstract class KAutoComplete {
         } else {
             doc = null;
         }
+        table = null;
+        constructor();
+    }
+
+    public KAutoComplete(JTable table, int column) {
+        this.field = (JTextField) table.getCellEditor(0, column).getTableCellEditorComponent(table, null, false, 0, column);
+        Document d = field.getDocument();
+        if (d instanceof KPlainDocument) {
+            doc = (KPlainDocument) d;
+        } else {
+            doc = null;
+        }
+        this.table = table;
         constructor();
     }
 
     public abstract List<Object[]> find(String text);
+    private boolean doit = false;
 
     public abstract void select(String text);
 
-    private void doit() {
-        int selIdx = list.getSelectedIndex();
-        if (selIdx != -1) {
-            select(list.getModel().getElementAt(selIdx).toString());
-            dialog.setVisible(false);
+    private synchronized void doit() {
+        if (!doit) {
+            doit = true;
+            int selIdx = list.getSelectedIndex();
+            if (selIdx != -1) {
+                popup.setVisible(false);
+                System.out.println("setVisible false");
+                String t=list.getModel().getElementAt(selIdx).toString();
+                field.setText(t);
+                select(t);
+            }
+            doit = false;
         }
     }
 
     private void constructor() {
+        popup.setFocusable(false);
+        scroll.setFocusable(false);
+        list.setFocusable(false);
+
+        Border border = new EmptyBorder(0, 0, 0, 0);
+        Border border2 = new LineBorder(Color.gray);
+        popup.setBorder(border2);
+        scroll.setBorder(border);
+        list.setBorder(border);
+        list.setFont(field.getFont());
+        list.setFixedCellHeight(field.getHeight());
+
+        popup.add(scroll);
+
+        //Listener para seleccionar un item con el mouse
         list.addMouseListener(new MouseAdapter() {
 
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
                 if (list.getSelectedValue() != null) {
                     doit();
                 }
             }
 
         });
-        Border border=new EmptyBorder(0,0,0,0);
-        dialog.setBorder(border);
-        scroll.setBorder(border);
-        list.setBorder(border);
-        list.setFont(field.getFont());
-        DefaultListCellRenderer renderer = (DefaultListCellRenderer) list.getCellRenderer();
-        renderer.setHorizontalAlignment(field.getHorizontalAlignment());
-        renderer.setBorder(new LineBorder(Color.gray));
-        list.setFixedCellHeight(field.getHeight());
-        dialog.add(scroll);
 
+        //Listener de eventos key sobre el textfield
         field.addKeyListener(new KeyAdapter() {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    doit();
-                } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    dialog.setVisible(false);
-                } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    if (idx < list.getModel().getSize() - 1) {
-                        idx++;
-                        list.setSelectedIndex(idx);
-                    }
-                } else if (e.getKeyCode() == KeyEvent.VK_UP) {
-                    if (idx >= 0) {
-                        idx--;
-                        if (idx == -1) {
-                            list.clearSelection();
-                        } else {
+                if (popup.isVisible()) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        doit();
+                        e.consume();
+                    } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                        popup.setVisible(false);
+                        System.out.println("setVisible false");
+                        e.consume();
+                    } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                        if (idx < list.getModel().getSize() - 1) {
+                            idx++;
                             list.setSelectedIndex(idx);
+                            list.updateUI();
                         }
+                        e.consume();
+                    } else if (e.getKeyCode() == KeyEvent.VK_UP) {
+                        if (idx >= 0) {
+                            idx--;
+                            if (idx == -1) {
+                                list.clearSelection();
+                            } else {
+                                list.setSelectedIndex(idx);
+                            }
+                        }
+                        e.consume();
                     }
                 }
             }
         });
 
+        //Listener cuando el textfield pierde el foco
         field.addFocusListener(new FocusAdapter() {
 
             @Override
             public void focusLost(FocusEvent e) {
                 idx = -1;
-                if (dialog.isVisible()) {
-                    if (visibleLostFocus) {
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                field.requestFocus();
-                                visibleLostFocus = false;
-                                dialog.repaint();
-                                dialog.updateUI();
-                            }
-                        });
-
+                if (popup.isVisible()) {
+                    if (table == null) {
+                        popup.setVisible(false);
                     } else {
-
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                dialog.setVisible(false);
-                            }
-                        });
+                        table.editCellAt(0, 0);
                     }
+                    System.out.println("setVisible false");
                 }
             }
-
         });
 
+        //Listener para cuando el texto del textfield se modifique
         field.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
@@ -158,7 +176,8 @@ public abstract class KAutoComplete {
             List<Object[]> lst;
 
             private void change() {
-                if (field.hasFocus()) {
+
+                if (!doit && field.hasFocus()) {
                     if (doc == null || (doc != null && !doc.lostFocus)) {
                         String find = field.getText().trim();
                         if (!find.equals(findMem)) {
@@ -171,25 +190,26 @@ public abstract class KAutoComplete {
                                     for (int i = 0; i < lst.size(); i++) {
                                         data[i] = lst.get(i)[0];
                                     }
-                                    list.clearSelection();
                                     list.setListData(data);
                                     idx = -1;
-                                    Point p = field.getLocationOnScreen();
-                                    p.translate(0, field.getHeight() - 4);
-                                    dialog.setLocation(p);
-                                    Dimension dim = new Dimension(field.getWidth(), size * field.getHeight() );
-                                   
-                                    dialog.setPreferredSize(dim);
-                                    visibleLostFocus = true;
-                                    dialog.pack();
-                                    dialog.show(field, 0, field.getHeight());
-                                    dialog.updateUI();
-                                    dialog.repaint();
+                                    Dimension dim = new Dimension(field.getWidth() + 2, 2 + Math.min(6, size) * field.getHeight());
+                                    popup.setPreferredSize(dim);
+                                    popup.setSize(dim);
+                                    System.out.println("setVisible true " + lst);
+                                    if (!popup.isVisible()) {
+                                        try {
+                                            popup.show(field, -1, field.getHeight());
+                                        } catch (Exception e) {
+                                        }
+                                        
+                                    }
                                 } else {
-                                    dialog.setVisible(false);
+                                    popup.setVisible(false);
+                                    System.out.println("setVisible false");
                                 }
                             } else {
-                                dialog.setVisible(false);
+                                popup.setVisible(false);
+                                System.out.println("setVisible false");
                             }
                         }
                     }
