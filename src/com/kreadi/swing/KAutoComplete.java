@@ -1,6 +1,5 @@
 package com.kreadi.swing;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -12,25 +11,25 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 
 public abstract class KAutoComplete {
 
     private final JTextField field;
     private final KPlainDocument doc;
-    private final JFrame dialog = new JFrame();
+    private final JPopupMenu dialog = new JPopupMenu();
     private final JList list = new JList();
-    private final JScrollPane scroll = new JScrollPane();
+    private final JScrollPane scroll = new JScrollPane(list);
     private int idx = -1;
     private boolean visibleLostFocus = false;
     private String findMem = "";
@@ -59,12 +58,6 @@ public abstract class KAutoComplete {
     }
 
     private void constructor() {
-        dialog.setAlwaysOnTop(true);
-        dialog.setUndecorated(true);
-        dialog.setFocusable(false);
-        scroll.setFocusable(false);
-        scroll.setViewportView(list);
-        list.setFocusable(false);
         list.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -75,17 +68,16 @@ public abstract class KAutoComplete {
             }
 
         });
-
-        Dimension min = new Dimension(0, 0);
-        list.setMaximumSize(min);
-        scroll.setMaximumSize(min);
-        dialog.setMaximumSize(min);
+        Border border=new EmptyBorder(0,0,0,0);
+        dialog.setBorder(border);
+        scroll.setBorder(border);
+        list.setBorder(border);
         list.setFont(field.getFont());
         DefaultListCellRenderer renderer = (DefaultListCellRenderer) list.getCellRenderer();
         renderer.setHorizontalAlignment(field.getHorizontalAlignment());
         renderer.setBorder(new LineBorder(Color.gray));
-        list.setFixedCellHeight(field.getHeight() - 4);
-        dialog.add(scroll, BorderLayout.CENTER);
+        list.setFixedCellHeight(field.getHeight());
+        dialog.add(scroll);
 
         field.addKeyListener(new KeyAdapter() {
 
@@ -119,7 +111,6 @@ public abstract class KAutoComplete {
             public void focusLost(FocusEvent e) {
                 idx = -1;
                 if (dialog.isVisible()) {
-                    System.out.println(visibleLostFocus);
                     if (visibleLostFocus) {
                         SwingUtilities.invokeLater(new Runnable() {
 
@@ -127,6 +118,8 @@ public abstract class KAutoComplete {
                             public void run() {
                                 field.requestFocus();
                                 visibleLostFocus = false;
+                                dialog.repaint();
+                                dialog.updateUI();
                             }
                         });
 
@@ -184,11 +177,14 @@ public abstract class KAutoComplete {
                                     Point p = field.getLocationOnScreen();
                                     p.translate(0, field.getHeight() - 4);
                                     dialog.setLocation(p);
-                                    Dimension dim = new Dimension(field.getWidth(), size * field.getHeight() + 4);
-                                    dialog.setSize(dim);
+                                    Dimension dim = new Dimension(field.getWidth(), size * field.getHeight() );
+                                   
                                     dialog.setPreferredSize(dim);
                                     visibleLostFocus = true;
-                                    dialog.setVisible(true);
+                                    dialog.pack();
+                                    dialog.show(field, 0, field.getHeight());
+                                    dialog.updateUI();
+                                    dialog.repaint();
                                 } else {
                                     dialog.setVisible(false);
                                 }
