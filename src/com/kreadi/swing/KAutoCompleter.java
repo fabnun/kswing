@@ -1,6 +1,8 @@
 package com.kreadi.swing;
 
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -13,28 +15,26 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JList;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.text.JTextComponent;
 
 public abstract class KAutoCompleter {
 
     public JList list = new JList();
     JScrollPane scroll = new JScrollPane(list);
-    public JPopupMenu popup = new JPopupMenu();
+    public JDialog popup = new JDialog();
     public JTextComponent textComp;
     private static final String AUTOCOMPLETER = "AUTOCOMPLETER"; //NOI18N
     private final Font font;
     private static Boolean blockOthers = false;
     private int column = -1;
-    private KTable table=null;
+    private KTable table = null;
 
     public static boolean isBlockOthers() {
         synchronized (blockOthers) {
@@ -49,75 +49,41 @@ public abstract class KAutoCompleter {
     }
 
     public KAutoCompleter(final JTextComponent textComp) {
-        this.textComp=textComp;
+        this.textComp = textComp;
         font = textComp.getFont();
-        list.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON1) {
-                    acceptedListItem(list.getSelectedValue());
-                    popup.setVisible(false);
-                }
-            }
-        });
-        list.setFont(font);
-        textComp.putClientProperty(AUTOCOMPLETER, this);
-        scroll.setBorder(null);
-        list.setFocusable(false);
-        scroll.getVerticalScrollBar().setFocusable(false);
-        scroll.getHorizontalScrollBar().setFocusable(false);
-        popup.add(scroll);
-
-        if (textComp instanceof JTextField) {
-            textComp.registerKeyboardAction(showAction, KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), JComponent.WHEN_FOCUSED);
-            textComp.getDocument().addDocumentListener(documentListener);
-        } else {
-            textComp.registerKeyboardAction(showAction, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.CTRL_MASK), JComponent.WHEN_FOCUSED);
-        }
-
-        textComp.registerKeyboardAction(upAction, KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), JComponent.WHEN_FOCUSED);
-        textComp.registerKeyboardAction(hidePopupAction, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
-
-        popup.addPopupMenuListener(new PopupMenuListener() {
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-            }
-
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                textComp.unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-            }
-        });
-        list.setRequestFocusEnabled(false);
-        textComp.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (!e.isTemporary()) {
-                    popup.setVisible(false);
-                }
-            }
-        });
+        constructor();
     }
 
     public KAutoCompleter(KTable table, int column) {
         this.column = column;
-        this.table=table;
+        this.table = table;
         font = table.getFont();
+        constructor();
+    }
+
+    private void constructor() {
+
+        list.setFont(font);
+
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) {
-                    acceptedListItem(list.getSelectedValue());
+                    Object o = list.getSelectedValue();
+                    if (o != null) {
+                        acceptedListItem(o);
+                    }
                     popup.setVisible(false);
                 }
             }
         });
-        list.setFont(font);
-        textComp = (JTextComponent) table.getCellEditor(0, column).getTableCellEditorComponent(table, null, false, 0, column);
+
+        if (table != null) {
+            textComp = (JTextComponent) table.getCellEditor(0, column).getTableCellEditorComponent(table, null, false, 0, column);
+        }
+
+        popup.setUndecorated(true);
+
         textComp.putClientProperty(AUTOCOMPLETER, this);
         scroll.setBorder(null);
         list.setFocusable(false);
@@ -135,20 +101,6 @@ public abstract class KAutoCompleter {
         textComp.registerKeyboardAction(upAction, KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), JComponent.WHEN_FOCUSED);
         textComp.registerKeyboardAction(hidePopupAction, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
 
-        popup.addPopupMenuListener(new PopupMenuListener() {
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-            }
-
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                textComp.unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-            }
-        });
         list.setRequestFocusEnabled(false);
         textComp.addFocusListener(new FocusAdapter() {
             @Override
@@ -201,23 +153,31 @@ public abstract class KAutoCompleter {
         synchronized (blockOthers) {
             if (!blockOthers) {
                 if ((table == null && textComp.getText().length() > 0 && textComp.isEnabled() && updateListData() && list.getModel().getSize() != 0)
-                        || (table!=null && column==table.getSelectedColumn() && textComp.getText().length() > 0 && textComp.isEnabled() && updateListData() && list.getModel().getSize() != 0)) {
+                        || (table != null && column == table.getSelectedColumn() && textComp.getText().length() > 0 && textComp.isEnabled() && updateListData() && list.getModel().getSize() != 0)) {
                     if (!(textComp instanceof JTextField)) {
                         textComp.getDocument().addDocumentListener(documentListener);
                     }
                     textComp.registerKeyboardAction(acceptAction, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), JComponent.WHEN_FOCUSED);
-                    int size = Math.min(list.getModel().getSize(),6);
+                    int size = Math.min(list.getModel().getSize(), 6);
                     list.setVisibleRowCount(size);
                     int x = 0;
                     try {
-                        popup.pack();
-                        popup.show(textComp, x, textComp.getHeight());
-                    } catch (Exception e) {
+                        Dimension dim = new Dimension(textComp.getWidth(), textComp.getHeight() * size);
+                        popup.setSize(dim);
+                        popup.setPreferredSize(dim);
+                        popup.setLocationRelativeTo(textComp);
+                        Point p = textComp.getLocationOnScreen();
+                        popup.setLocation(p.x, p.y + textComp.getHeight());
+
+                        popup.setModal(true);
+                        popup.setAlwaysOnTop(true);
+                        popup.setVisible(true);
+                    } catch (SecurityException e) {
                     }
                 } else {
                     popup.setVisible(false);
                 }
-                textComp.requestFocus();
+                //textComp.requestFocus();
 
             }
         }

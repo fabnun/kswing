@@ -119,29 +119,6 @@ public class KTable extends JTable {
         return row;
     }
 
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("KTable Test");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        Container pane = frame.getContentPane();
-        KTable table = new KTable(
-                new String[]{"String", "Integer"},
-                new Class[]{String.class, Integer.class},
-                new boolean[]{true, true},
-                new int[]{16, 9},
-                new String[]{null, "\\d*"}
-        );
-        table.addRow(new Object[]{"String1", 1});
-        table.addRow(new Object[]{"String", 1});
-        table.addRow(new Object[]{null, null});
-        table.addRow(new Object[]{"String", 1});
-        JScrollPane scroll = new JScrollPane();
-        scroll.setViewportView(table);
-        pane.add(scroll, BorderLayout.CENTER);
-        frame.setSize(240, 160);
-        frame.setLocationRelativeTo(null);
-        table.setFont(new Font("verdana", 0, 14));
-        table.setRowHeight(22);
-        frame.setVisible(true);
-    }
+
 
 }

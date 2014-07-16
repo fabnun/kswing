@@ -14,7 +14,7 @@ public class KPlainDocument extends PlainDocument {
     private final int limit;
     private final String regExp;
     private final char to;
-    private boolean lostFocus = false;
+    public boolean lostFocus = false;
 
     public KPlainDocument(int limit) {
         this(limit, null, null, null);
@@ -70,7 +70,8 @@ public class KPlainDocument extends PlainDocument {
                 @Override
                 public void focusGained(FocusEvent e) {
                     try {
-                        field.setText(field.getText().replaceAll("\\.|,", ""));
+                        String focus=field.getText().replaceAll("\\.|,", "");
+                        field.setText(focus);
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
