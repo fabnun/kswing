@@ -72,7 +72,6 @@ public class Test extends javax.swing.JFrame {
 
             @Override
             public void select(String text) {
-                System.out.println(text);
                 kt.setValueAt(text, 0, 0);
             }
         };

@@ -1,7 +1,9 @@
 package com.kreadi.swing;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
@@ -9,11 +11,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import javax.swing.JList;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -26,11 +30,12 @@ public abstract class KAutoComplete {
     public final JTextField field;
     private final KPlainDocument doc;
     private final JPopupMenu popup = new JPopupMenu();
-    private final JList list = new JList();
+    private final KTable list = new KTable(new String[]{""}, new Class[]{String.class}, new boolean[]{false}, new int[]{0}, new String[]{null});
     private final JScrollPane scroll = new JScrollPane(list);
     private int idx = -1;
     private String findMem = "";
     private final JTable table;
+    private int rowHeight;
 
     public KAutoComplete(JTextField field) {
         this.field = field;
@@ -41,6 +46,7 @@ public abstract class KAutoComplete {
             doc = null;
         }
         table = null;
+        rowHeight = field.getHeight();
         constructor();
     }
 
@@ -64,11 +70,10 @@ public abstract class KAutoComplete {
     private synchronized void doit() {
         if (!doit) {
             doit = true;
-            int selIdx = list.getSelectedIndex();
+            int selIdx = list.getSelectedRow();
             if (selIdx != -1) {
                 popup.setVisible(false);
-                System.out.println("setVisible false");
-                String t=list.getModel().getElementAt(selIdx).toString();
+                String t = list.getValueAt(selIdx, 0).toString();
                 field.setText(t);
                 select(t);
             }
@@ -76,19 +81,23 @@ public abstract class KAutoComplete {
         }
     }
 
+    private Component getRootParent(Component c) {
+        Component p = c.getParent();
+        return p == null ? c : getRootParent(p);
+    }
+
     private void constructor() {
+        list.setFocusable(false);
+        list.setTableHeader(null);
         popup.setFocusable(false);
         scroll.setFocusable(false);
-        list.setFocusable(false);
 
         Border border = new EmptyBorder(0, 0, 0, 0);
-        Border border2 = new LineBorder(Color.gray);
-        popup.setBorder(border2);
-        scroll.setBorder(border);
+        Border border2 = new LineBorder(Color.gray, 1);
+        scroll.setBorder(border2);
         list.setBorder(border);
         list.setFont(field.getFont());
-        list.setFixedCellHeight(field.getHeight());
-
+        popup.setBorder(border);
         popup.add(scroll);
 
         //Listener para seleccionar un item con el mouse
@@ -96,7 +105,7 @@ public abstract class KAutoComplete {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                if (list.getSelectedValue() != null) {
+                if (list.getSelectedRow() != -1) {
                     doit();
                 }
             }
@@ -114,13 +123,12 @@ public abstract class KAutoComplete {
                         e.consume();
                     } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                         popup.setVisible(false);
-                        System.out.println("setVisible false");
                         e.consume();
                     } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                        if (idx < list.getModel().getSize() - 1) {
+                        if (idx < list.getRowCount() - 1) {
                             idx++;
-                            list.setSelectedIndex(idx);
-                            list.updateUI();
+                            list.setRowSelectionInterval(idx, idx);
+                            list.scrollRectToVisible(list.getCellRect(idx, 0, false));
                         }
                         e.consume();
                     } else if (e.getKeyCode() == KeyEvent.VK_UP) {
@@ -129,7 +137,8 @@ public abstract class KAutoComplete {
                             if (idx == -1) {
                                 list.clearSelection();
                             } else {
-                                list.setSelectedIndex(idx);
+                                list.setRowSelectionInterval(idx, idx);
+                                list.scrollRectToVisible(list.getCellRect(idx, 0, false));
                             }
                         }
                         e.consume();
@@ -139,20 +148,15 @@ public abstract class KAutoComplete {
         });
 
         //Listener cuando el textfield pierde el foco
-        field.addFocusListener(new FocusAdapter() {
+        popup.addFocusListener(new FocusAdapter() {
 
             @Override
-            public void focusLost(FocusEvent e) {
-                idx = -1;
-                if (popup.isVisible()) {
-                    if (table == null) {
-                        popup.setVisible(false);
-                    } else {
-                        table.editCellAt(0, 0);
-                    }
-                    System.out.println("setVisible false");
+            public void focusGained(FocusEvent e) {
+                if (e.getOppositeComponent() == field) {
+                    field.requestFocus();
                 }
             }
+
         });
 
         //Listener para cuando el texto del textfield se modifique
@@ -178,6 +182,9 @@ public abstract class KAutoComplete {
             private void change() {
 
                 if (!doit && field.hasFocus()) {
+                    if (rowHeight < 2) {
+                        rowHeight = field.getHeight();
+                    }
                     if (doc == null || (doc != null && !doc.lostFocus)) {
                         String find = field.getText().trim();
                         if (!find.equals(findMem)) {
@@ -186,30 +193,37 @@ public abstract class KAutoComplete {
                                 lst = find(find);
                                 int size = lst == null ? 0 : lst.size();
                                 if (size > 0) {
+                                    if (popup.isVisible()) {
+                                        popup.setVisible(false);
+                                    }
                                     Object[] data = new Object[lst.size()];
+                                    while (list.getRowCount() > 0) {
+                                        list.removeRow(0);
+                                    }
                                     for (int i = 0; i < lst.size(); i++) {
                                         data[i] = lst.get(i)[0];
+                                        list.addRow(new Object[]{data[i]});
                                     }
-                                    list.setListData(data);
                                     idx = -1;
-                                    Dimension dim = new Dimension(field.getWidth() + 2, 2 + Math.min(6, size) * field.getHeight());
+                                    Dimension dim = new Dimension(field.getWidth(), 2 + Math.min(6, size) * field.getHeight());
+                                    list.setRowHeight(rowHeight);
                                     popup.setPreferredSize(dim);
                                     popup.setSize(dim);
-                                    System.out.println("setVisible true " + lst);
-                                    if (!popup.isVisible()) {
+                                    if (!popup.isVisible() && field.isVisible()) {
                                         try {
-                                            popup.show(field, -1, field.getHeight());
+                                            popup.show(field, 0, rowHeight);
+                                            if (table != null) {
+                                                Component editor = table.getEditorComponent();
+                                                editor.requestFocusInWindow();
+                                            }
                                         } catch (Exception e) {
                                         }
-                                        
                                     }
                                 } else {
                                     popup.setVisible(false);
-                                    System.out.println("setVisible false");
                                 }
                             } else {
                                 popup.setVisible(false);
-                                System.out.println("setVisible false");
                             }
                         }
                     }

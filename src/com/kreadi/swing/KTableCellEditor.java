@@ -43,7 +43,6 @@ public class KTableCellEditor extends AbstractCellEditor implements TableCellEdi
                     } else if (code == KeyEvent.VK_RIGHT) {
                         int pos=textField.getCaretPosition();
                         int max=textField.getText().length() - 1;
-                        System.out.println(pos+" "+max);
                         if (pos >= max) {
                             KSwingTools.fireTab();
                         }
