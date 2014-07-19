@@ -3,7 +3,6 @@ package com.kreadi.swing;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
@@ -11,13 +10,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -36,6 +32,10 @@ public abstract class KAutoComplete {
     private String findMem = "";
     private final JTable table;
     private int rowHeight;
+    
+    public void setBackground(Color bg){
+        list.setBackground(bg);
+    }
 
     public KAutoComplete(JTextField field) {
         this.field = field;
@@ -209,7 +209,7 @@ public abstract class KAutoComplete {
                                     list.setRowHeight(rowHeight);
                                     popup.setPreferredSize(dim);
                                     popup.setSize(dim);
-                                    if (!popup.isVisible() && field.isVisible()) {
+                                    if (!popup.isVisible() && field.isVisible() && field.isEditable() && field.isEnabled()) {
                                         try {
                                             popup.show(field, 0, rowHeight);
                                             if (table != null) {
