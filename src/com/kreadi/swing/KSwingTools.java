@@ -113,9 +113,9 @@ public class KSwingTools {
         //TODO cuando pierda el foco se formatee
     }
 
-    public static CalendarPane calendar(final JLabel field, final SimpleDateFormat sdf, String titulo, boolean allowClear) {
+    public static CalendarPane calendar(final JLabel field, final SimpleDateFormat sdf, boolean allowClear) {
         field.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        final JPopupMenu menu = new JPopupMenu(titulo);
+        final JPopupMenu menu = new JPopupMenu();
         final CalendarPane datePanel = new CalendarPane(CalendarPane.STYLE_CLASSIC);
         datePanel.setLabel(field);
         datePanel.setShowNoneButton(allowClear);
