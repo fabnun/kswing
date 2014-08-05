@@ -74,21 +74,14 @@ public class BasicGradientUI extends GradientUI {
 		calculateViewRect(gradient);
 
 		BoundedTableModel colorModel = gradient.getDataModel();
-		BoundedTableModel alphaModel = gradient.getAlphaModel();
 
-		if (colorModel == null)
-			return;
-
-		// TODO: alpha support
+		if (colorModel == null) return;
 
 		int numColorPoints = colorModel.getRowCount();
-		int numAlphaPoints = alphaModel == null ? 0 : alphaModel.getRowCount();
 
 		int colorPositionColumn = gradient.getColorPositionColumn();
 		int colorColumn = gradient.getColorColumn();
 
-		int alphaPositionColumn = gradient.getAlphaPositionColumn();
-		int alphaColumn = gradient.getAlphaColumn();
 
 		switch (numColorPoints) {
 		case 0:

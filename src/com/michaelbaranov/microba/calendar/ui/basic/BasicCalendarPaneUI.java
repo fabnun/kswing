@@ -233,7 +233,6 @@ public class BasicCalendarPaneUI extends CalendarPaneUI implements
 					new Insets(0, 0, 0, 0), 0, 0));
 		}
 		if (peer.isShowNumberOfWeek()) {
-			// TODO:
 		}
 		peer.revalidate();
 		peer.repaint();

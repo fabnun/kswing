@@ -179,7 +179,6 @@ class CalendarGridPanel extends JPanel implements FocusListener,
         addKeyListener(this);
         setFocusable(true);
 
-        // TODO: move the following to key listeners?
         InputMap input = this.getInputMap(JComponent.WHEN_FOCUSED);
         input.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
                 "##microba.commit##");
@@ -611,7 +610,6 @@ class CalendarGridPanel extends JPanel implements FocusListener,
     }
 
     public void setBaseDate(Date baseDate) {
-        // TODO: throw away the following 2 lines?
         // if (baseDate == null)
         // baseDate = new Date();
         Date old = this.baseDate;

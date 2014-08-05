@@ -93,7 +93,6 @@ class CalendarHeader extends JPanel {
 
 		for (int i = 0; i < numDaysInWeek; i++) {
 			JLabel label = new JLabel();
-			// TODO: add option to control limit length:
 			label.setText(fmt.format(cal.getTime())/* .substring(0,1) */);
 			label.setForeground(isEnabled() ? foregroundColorActive
 					: foregroundColorInactive);

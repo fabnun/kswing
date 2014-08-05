@@ -5,7 +5,7 @@ import java.text.DecimalFormat;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 
-class KCellRenderer extends DefaultTableCellRenderer {
+public class KCellRenderer extends DefaultTableCellRenderer {
 
     private final Class cls;
     private final DecimalFormat formatter;

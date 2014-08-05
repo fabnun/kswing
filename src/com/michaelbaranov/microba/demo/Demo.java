@@ -133,7 +133,6 @@ public class Demo extends JApplet {
 		try {
 			calendarPane.setDate(new Date());
 		} catch (PropertyVetoException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

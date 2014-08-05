@@ -96,7 +96,6 @@ public class Microba {
 	 */
 	public static void setColorOverrideMap(String lookAndFeel, Map overrides) {
 		lookAndFeelToOverride.put(lookAndFeel, overrides);
-		// TODO: refresh ui delegates
 	}
 
 	/**
