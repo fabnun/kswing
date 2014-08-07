@@ -7,6 +7,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  * Implementacion de un JTable mas sencillo de administrar
@@ -18,6 +19,7 @@ public class KTable extends JTable {
     /**
      * Aplica la fuente tambien a los CellEditor
      */
+
     @Override
     public void setFont(Font font) {
         super.setFont(font);
@@ -41,6 +43,7 @@ public class KTable extends JTable {
      * @param regexp expresion regular valida
      */
     public KTable(String[] colNames, final Class[] colClasses, final boolean[] editable, int[] maxChars, String[] regexp) {
+        
         final Class[] colClasses2 = new Class[colClasses.length];
         for (int i = 0; i < colClasses.length; i++) {
             colClasses2[i] = colClasses[i] == Integer.class ? String.class : colClasses[i];
@@ -67,6 +70,11 @@ public class KTable extends JTable {
                 col.setCellRenderer(new KCellRenderer(colClasses[i], KSwingTools.decimalFormat));
             }
         }
+        getTableHeader().setReorderingAllowed(false);
+    }
+    
+    public KCellRenderer getCellRenderer(int col){
+        return (KCellRenderer) ((TableColumnModel)getColumnModel()).getColumn(col).getCellRenderer();
     }
 
     @Override
