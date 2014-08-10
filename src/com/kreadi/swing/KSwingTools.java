@@ -120,8 +120,11 @@ public class KSwingTools {
         datePanel.setLabel(field);
         datePanel.setShowNoneButton(allowClear);
         try {
-            datePanel.setDate(sdf.parse(field.getText()));
+            String text=field.getText();
+            Date date=sdf.parse(text);
+            datePanel.setDate(date);
         } catch (ParseException | PropertyVetoException e) {
+           // e.printStackTrace();
         }
         try {
             Date date = new Date();
@@ -135,7 +138,9 @@ public class KSwingTools {
                 public void mousePressed(MouseEvent e) {
                     if (datePanel.isVisible() && datePanel.isEnabled() && e.getButton() == MouseEvent.BUTTON1) {
                         try {
-                            datePanel.setDate(sdf.parse(field.getText()));
+                            String text=field.getText();
+                            Date d=sdf.parse(text);
+                            datePanel.setDate(d);
                         } catch (ParseException | PropertyVetoException ex) {
                             ex.printStackTrace();
                         }
