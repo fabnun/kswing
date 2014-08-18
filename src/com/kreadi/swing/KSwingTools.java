@@ -4,18 +4,19 @@ import com.michaelbaranov.microba.calendar.CalendarPane;
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.FontFormatException;
+import java.awt.FontMetrics;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.net.URL;
@@ -24,29 +25,38 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import javax.swing.BoxLayout;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
+import javax.swing.JRootPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.plaf.synth.SynthLookAndFeel;
 import javax.swing.table.TableColumnModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.JTextComponent;
 
 public class KSwingTools {
 
-    public static DecimalFormat decimalFormat = new DecimalFormat("#,###");
+    private static final KeyStroke escapeStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+    private static final String dispatchWindowClosingActionMapKey = "com.spodding.tackline.dispatch:WINDOW_CLOSING";
+    
 
+    /**
+     * Obtiene un TTF Font indicando la url del archivo.ttf, el estilo y el tamaño
+     *
+     * @param url
+     * @param style
+     * @param size
+     * @return
+     */
     public static Font getTTFFont(URL url, int style, float size) {
         try {
             return Font.createFont(Font.TRUETYPE_FONT, url.openStream()).deriveFont(style, size);
@@ -56,7 +66,12 @@ public class KSwingTools {
         }
     }
 
-    public static void addEscapeListener(final JFrame dialog) {
+    /**
+     * Sale de la aplicacion al presionar escape... OJO!!! sin el evento window.clossin
+     *
+     * @param frame
+     */
+    public static void addEscapeListener(final JFrame frame) {
         ActionListener escListener = new ActionListener() {
 
             @Override
@@ -65,31 +80,35 @@ public class KSwingTools {
             }
         };
 
-        dialog.getRootPane().registerKeyboardAction(escListener,
+        frame.getRootPane().registerKeyboardAction(escListener,
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
 
+    /**
+     * Cierra el dialogo al presionar escape... OJO!!! este si llama al evento window.clossin
+     *
+     * @param dialog
+     */
     public static void addEscapeListener(final JDialog dialog) {
-        ActionListener escListener = new ActionListener() {
 
+        Action dispatchClosing = new AbstractAction() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                dialog.setVisible(false);
+            public void actionPerformed(ActionEvent event) {
+                dialog.dispatchEvent(new WindowEvent(
+                        dialog, WindowEvent.WINDOW_CLOSING
+                ));
             }
         };
-
-        dialog.getRootPane().registerKeyboardAction(escListener,
-                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                JComponent.WHEN_IN_FOCUSED_WINDOW);
+        JRootPane root = dialog.getRootPane();
+        root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                escapeStroke, dispatchWindowClosingActionMapKey
+        );
+        root.getActionMap().put(dispatchWindowClosingActionMapKey, dispatchClosing
+        );
     }
 
-    public static void setSynthLookAndFeel(URL xmlconfig) throws IOException, ParseException, UnsupportedLookAndFeelException {
-        SynthLookAndFeel synth = new SynthLookAndFeel();
-        synth.load(xmlconfig);
-        UIManager.setLookAndFeel(synth);
-    }
-
+    /**Establece los colores principales del look and feel nimbu*/
     public static void setNimbusLookAndFeel(Color... colors) {
         String[] keys = new String[]{"nimbusBlueGrey", "control", "Table.focusCellHighlightBorder"};
         try {
@@ -120,11 +139,11 @@ public class KSwingTools {
         datePanel.setLabel(field);
         datePanel.setShowNoneButton(allowClear);
         try {
-            String text=field.getText();
-            Date date=sdf.parse(text);
+            String text = field.getText();
+            Date date = sdf.parse(text);
             datePanel.setDate(date);
         } catch (ParseException | PropertyVetoException e) {
-           // e.printStackTrace();
+            // e.printStackTrace();
         }
         try {
             Date date = new Date();
@@ -138,8 +157,8 @@ public class KSwingTools {
                 public void mousePressed(MouseEvent e) {
                     if (datePanel.isVisible() && datePanel.isEnabled() && e.getButton() == MouseEvent.BUTTON1) {
                         try {
-                            String text=field.getText();
-                            Date d=sdf.parse(text);
+                            String text = field.getText();
+                            Date d = sdf.parse(text);
                             datePanel.setDate(d);
                         } catch (ParseException | PropertyVetoException ex) {
                             ex.printStackTrace();
@@ -215,6 +234,31 @@ public class KSwingTools {
             e.printStackTrace();
         }
 
+    }
+
+    public static int getLineAtCaret(JTextComponent component) {
+        int caretPosition = component.getCaretPosition();
+        Element root = component.getDocument().getDefaultRootElement();
+        return root.getElementIndex(caretPosition) + 1;
+    }
+
+    public static int getColumnAtCaret(JTextComponent component) {
+        FontMetrics fm = component.getFontMetrics(component.getFont());
+        int characterWidth = fm.stringWidth("0");
+        int column = 0;
+
+        try {
+            Rectangle r = component.modelToView(component.getCaretPosition());
+            if (r != null) {
+                int width = r.x - component.getInsets().left;
+                column = width / characterWidth;
+            } else {
+                column = 1;
+            }
+        } catch (BadLocationException ble) {
+        }
+
+        return column + 1;
     }
 
 }

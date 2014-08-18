@@ -118,16 +118,15 @@ public class KTableCellListener implements PropertyChangeListener, Runnable {
 
         SwingUtilities.invokeLater(this);
     }
-    /*
-     *  See above.
-     */
 
     @Override
     public void run() {
         row = table.convertRowIndexToModel(table.getEditingRow());
         column = table.convertColumnIndexToModel(table.getEditingColumn());
-        oldValue = table.getModel().getValueAt(row, column);
-        newValue = null;
+        if (column != -1 && row != -1) {
+            oldValue = table.getModel().getValueAt(row, column);
+            newValue = null;
+        }
     }
 
     /*
