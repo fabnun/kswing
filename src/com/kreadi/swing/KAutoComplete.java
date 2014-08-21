@@ -32,8 +32,8 @@ public abstract class KAutoComplete {
     private String findMem = "";
     private final JTable table;
     private int rowHeight;
-    
-    public void setBackground(Color bg){
+
+    public void setBackground(Color bg) {
         list.setBackground(bg);
     }
 
@@ -196,17 +196,33 @@ public abstract class KAutoComplete {
                                     if (popup.isVisible()) {
                                         popup.setVisible(false);
                                     }
-                                    Object[] data = new Object[lst.size()];
+                                    Object[][] data = new Object[lst.size()][];
+                                    int cols=lst.get(0).length;
+                                    String[] nams=new String[cols];
+                                    Class[] clss=new Class[cols];
+                                     boolean[] bols=new boolean[cols];
+                                     int[] ints=new int[cols];
+                                     String[] nams2=new String[cols];
+                                     for(int i=0;i<cols;i++){
+                                         nams[i]="";
+                                         clss[i]=lst.get(0)[i].getClass();
+                                         bols[i]=false;
+                                         ints[i]=0;
+                                         nams2[i]=null;
+                                     }
+                                    list.setModel(KTable.buildModel(nams,clss, bols, ints, nams2));
                                     while (list.getRowCount() > 0) {
                                         list.removeRow(0);
                                     }
                                     for (int i = 0; i < lst.size(); i++) {
-                                        data[i] = lst.get(i)[0];
-                                        list.addRow(new Object[]{data[i]});
+                                        data[i] = lst.get(i);
+                                        list.addRow(data[i]);
                                     }
+                                    list.resizeColumnWidth();
                                     idx = -1;
                                     Dimension dim = new Dimension(field.getWidth(), 2 + Math.min(6, size) * field.getHeight());
                                     list.setRowHeight(rowHeight);
+                                    list.updateUI();
                                     popup.setPreferredSize(dim);
                                     popup.setSize(dim);
                                     if (!popup.isVisible() && field.isVisible() && field.isEditable() && field.isEnabled()) {

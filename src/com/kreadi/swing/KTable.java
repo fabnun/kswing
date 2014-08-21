@@ -14,8 +14,20 @@ import javax.swing.table.TableModel;
  */
 public class KTable extends JTable {
 
-    private final DefaultTableModel dtm;
+    private DefaultTableModel dtm;
     private static final DecimalFormat decimalFormat = new DecimalFormat("#,###");
+
+    public void resizeColumnWidth() {
+        final TableColumnModel colModel = getColumnModel();
+        for (int column = 0; column < getColumnCount(); column++) {
+            int width = 50; // Min width
+            for (int row = 0; row < getRowCount(); row++) {
+                Component comp = prepareRenderer(getCellRenderer(row, column), row, column);
+                width = Math.max(comp.getPreferredSize().width, width);
+            }
+            colModel.getColumn(column).setPreferredWidth(width);
+        }
+    }
 
     @Override
     public Class<?> getColumnClass(int column) {
@@ -38,23 +50,16 @@ public class KTable extends JTable {
         }
     }
 
-    /**
-     * Instancia una tabla
-     *
-     * @param colNames array de nombres de las columnas
-     * @param colClasses array de clases de las columnas
-     * @param editable array de columnas editables
-     * @param maxChars array de cantidad maxima de caracteres
-     * @param regexp expresion regular valida
-     */
-    public KTable(String[] colNames, final Class[] colClasses, final boolean[] editable, int[] maxChars, String[] regexp) {
+    @Override
+    public void setModel(TableModel dataModel) {
+        super.setModel(dataModel);
+        this.dtm = (DefaultTableModel) dataModel;
+    }
+
+    public static DefaultTableModel buildModel(String[] colNames, final Class[] colClasses, final boolean[] editable, int[] maxChars, String[] regexp) {
         final Class[] colClasses2 = new Class[colClasses.length];
-        for (int i = 0; i < colClasses.length; i++) {
-            colClasses2[i] =
-                    //colClasses[i] == Integer.class ? String.class : 
-                    colClasses[i];
-        }
-        dtm = new DefaultTableModel(colNames, 0) {
+        System.arraycopy(colClasses, 0, colClasses2, 0, colClasses.length);
+        return new DefaultTableModel(colNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return editable == null || editable[column];
@@ -65,6 +70,19 @@ public class KTable extends JTable {
                 return colClasses == null ? String.class : colClasses2[columnIndex];
             }
         };
+    }
+
+    /**
+     * Instancia una tabla
+     *
+     * @param colNames array de nombres de las columnas
+     * @param colClasses array de clases de las columnas
+     * @param editable array de columnas editables
+     * @param maxChars array de cantidad maxima de caracteres
+     * @param regexp expresion regular valida
+     */
+    public KTable(String[] colNames, final Class[] colClasses, final boolean[] editable, int[] maxChars, String[] regexp) {
+        dtm = buildModel(colNames, colClasses, editable, maxChars, regexp);
         setModel(dtm);
         TableColumnModel tcm = this.getColumnModel();
         if (colClasses != null) {
