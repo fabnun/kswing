@@ -17,6 +17,11 @@ public class KTable extends JTable {
     private final DefaultTableModel dtm;
     private static final DecimalFormat decimalFormat = new DecimalFormat("#,###");
 
+    @Override
+    public Class<?> getColumnClass(int column) {
+        return super.getColumnClass(column); //To change body of generated methods, choose Tools | Templates.
+    }
+
     /**
      * Aplica la fuente tambien a los CellEditor
      */
@@ -43,10 +48,11 @@ public class KTable extends JTable {
      * @param regexp expresion regular valida
      */
     public KTable(String[] colNames, final Class[] colClasses, final boolean[] editable, int[] maxChars, String[] regexp) {
-
         final Class[] colClasses2 = new Class[colClasses.length];
         for (int i = 0; i < colClasses.length; i++) {
-            colClasses2[i] = colClasses[i] == Integer.class ? String.class : colClasses[i];
+            colClasses2[i] =
+                    //colClasses[i] == Integer.class ? String.class : 
+                    colClasses[i];
         }
         dtm = new DefaultTableModel(colNames, 0) {
             @Override

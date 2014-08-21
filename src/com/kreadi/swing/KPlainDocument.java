@@ -70,7 +70,7 @@ public class KPlainDocument extends PlainDocument {
                 @Override
                 public void focusGained(FocusEvent e) {
                     try {
-                        String focus=field.getText().replaceAll("\\.|,", "");
+                        String focus = field.getText().replaceAll("\\.|,", "");
                         field.setText(focus);
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -84,10 +84,12 @@ public class KPlainDocument extends PlainDocument {
 
     @Override
     public void replace(int offset, int length, String str, AttributeSet attrs) throws BadLocationException {
+
         if (lostFocus) {
             super.replace(offset, length, str, attrs);
         } else {
             if (str == null) {
+
                 return;
             }
             if (to == 'L') {
@@ -102,14 +104,17 @@ public class KPlainDocument extends PlainDocument {
                 super.replace(offset, length, str, attrs); //To change body of generated methods, choose Tools | Templates.
             }
         }
+
     }
 
     @Override
     public void insertString(int offset, String str, AttributeSet attr) throws BadLocationException {
+
         if (lostFocus) {
             super.insertString(offset, str, attr);
         } else {
             if (str == null) {
+
                 return;
             }
             if (to == 'L') {
@@ -126,5 +131,6 @@ public class KPlainDocument extends PlainDocument {
                 }
             }
         }
+
     }
 }
