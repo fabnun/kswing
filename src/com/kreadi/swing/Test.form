@@ -57,7 +57,7 @@
       <SubComponents>
         <Component class="javax.swing.JTable" name="jTable1">
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new KTable(&#xd;&#xa;new String[]{&quot;texto&quot;,&quot;num&quot;},&#xd;&#xa;new Class[]{String.class, Integer.class},&#xd;&#xa;new boolean[]{true,true},&#xd;&#xa;new int[]{32, 9},&#xd;&#xa;new String[]{null, &quot;\\d*&quot;}&#xd;&#xa;&#xd;&#xa;&#xd;&#xa;)"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new KTable(&#xd;&#xa;new String[]{&quot;texto&quot;,&quot;num&quot;,&quot;bol&quot;},&#xd;&#xa;new Class[]{String.class, Integer.class, Boolean.class},&#xd;&#xa;new boolean[]{true,true, true},&#xd;&#xa;new int[]{32, 9, 0},&#xd;&#xa;new String[]{null, &quot;\\d*&quot;, null}&#xd;&#xa;&#xd;&#xa;&#xd;&#xa;)"/>
           </AuxValues>
         </Component>
       </SubComponents>

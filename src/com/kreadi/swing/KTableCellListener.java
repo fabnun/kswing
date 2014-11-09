@@ -19,8 +19,8 @@ public class KTableCellListener implements PropertyChangeListener, Runnable {
 
     private int row;
     private int column;
-    private Object oldValue;
-    private Object newValue;
+    public Object oldValue;
+    public Object newValue;
 
     /**
      * Create a TableCellListener.

@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.kreadi.swing;
 
 import java.util.LinkedList;
@@ -20,8 +19,10 @@ public class Test extends javax.swing.JFrame {
      */
     public Test() {
         initComponents();
-        final KTable kt=(KTable) jTable1;
-        kt.addRow(new Object[]{"ha",1});
+        final KTable kt = (KTable) jTable1;
+        kt.addRow(new Object[]{"ha", 1, false});
+        kt.addRow(new Object[]{"ho", 1.5, true});
+        kt.addRow(new Object[]{"hu", 3, false});
         new KAutoComplete(jTextField1) {
 
             @Override
@@ -48,7 +49,7 @@ public class Test extends javax.swing.JFrame {
                 jTextField1.setText(text);
             }
         };
-        
+
         new KAutoComplete(jTable1, 0) {
 
             @Override
@@ -76,7 +77,7 @@ public class Test extends javax.swing.JFrame {
             }
         };
         kt.setRowHeight(22);
-        
+
         setLocationRelativeTo(null);
     }
 
@@ -90,11 +91,11 @@ public class Test extends javax.swing.JFrame {
         jTextField1 = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new KTable(
-            new String[]{"texto","num"},
-            new Class[]{String.class, Integer.class},
-            new boolean[]{true,true},
-            new int[]{32, 9},
-            new String[]{null, "\\d*"}
+            new String[]{"texto","num","bol"},
+            new Class[]{String.class, Integer.class, Boolean.class},
+            new boolean[]{true,true, true},
+            new int[]{32, 9, 0},
+            new String[]{null, "\\d*", null}
 
         );
 
@@ -155,6 +156,7 @@ public class Test extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new Test().setVisible(true);
             }

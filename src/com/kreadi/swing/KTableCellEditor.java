@@ -14,10 +14,10 @@ import javax.swing.table.TableCellEditor;
 
 public class KTableCellEditor extends AbstractCellEditor implements TableCellEditor {
 
-    private final JComponent component;
     public final JTextField textField;
     private final JCheckBox checkBox;
     private final Class cls;
+    private static final LineBorder border = new LineBorder(Color.black);
 
     public KTableCellEditor(Class cls) {
         this(cls, 0);
@@ -29,7 +29,7 @@ public class KTableCellEditor extends AbstractCellEditor implements TableCellEdi
 
     public KTableCellEditor(Class cls, int maxChars, String regExp) {
         this.cls = cls;
-        if (maxChars > 0 || regExp != null || cls != Integer.class) {
+        if (maxChars > 0 || regExp != null || cls != Boolean.class) {
             textField = new JTextField();
             textField.addKeyListener(new KeyAdapter() {
 
@@ -41,57 +41,64 @@ public class KTableCellEditor extends AbstractCellEditor implements TableCellEdi
                             KSwingTools.fireShiftTab();
                         }
                     } else if (code == KeyEvent.VK_RIGHT) {
-                        int pos=textField.getCaretPosition();
-                        int max=textField.getText().length() - 1;
+                        int pos = textField.getCaretPosition();
+                        int max = textField.getText().length() - 1;
                         if (pos >= max) {
                             KSwingTools.fireTab();
                         }
                     }
                 }
-
             });
             if (cls == Integer.class) {
                 textField.setHorizontalAlignment(JTextField.RIGHT);
             }
             textField.setBorder(new LineBorder(Color.white, 1));
             textField.setDocument(new KPlainDocument(maxChars, regExp));
-            component = textField;
             checkBox = null;
         } else {
             textField = null;
             checkBox = new JCheckBox();
-            component = checkBox;
         }
     }
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean selected, int row, int col) {
+        JComponent comp = null;
         if (cls == Boolean.class) {
-            checkBox.setSelected((Boolean) value);
+            checkBox.setSelected(value == null ? false : (Boolean) value);
+            comp = checkBox;
         } else if (cls == Integer.class) {
             if (value != null) {
                 textField.setText(value.toString());
             } else {
                 textField.setText("");
             }
-        } else {
+            comp = textField;
+        } else if (cls == String.class) {
             textField.setText((String) value);
+            comp = textField;
         }
-        return component;
+        if (comp != null) {
+            comp.setOpaque(true);
+            comp.setBackground(table.getSelectionBackground().brighter().brighter());
+        }
+        return comp;
     }
 
     @Override
     public Object getCellEditorValue() {
+        Object val = null;
         if (cls == Boolean.class) {
-            return checkBox.isSelected();
+            val = checkBox.isSelected();
         } else if (cls == Integer.class) {
             try {
-                return Integer.parseInt(textField.getText());
+                val = Integer.parseInt(textField.getText());
             } catch (NumberFormatException e) {
-                return null;
+
             }
         } else {
-            return textField.getText();
+            val = textField.getText();
         }
+        return val;
     }
 }
