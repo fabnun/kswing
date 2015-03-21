@@ -25,6 +25,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.TimeZone;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -132,10 +134,10 @@ public class KSwingTools {
         //TODO cuando pierda el foco se formatee
     }
 
-    public static CalendarPane calendar(final JLabel field, final SimpleDateFormat sdf, boolean allowClear) {
+    public static CalendarPane calendar(final JLabel field, final SimpleDateFormat sdf, boolean allowClear, TimeZone timezone) {
         field.setCursor(new Cursor(Cursor.HAND_CURSOR));
         final JPopupMenu menu = new JPopupMenu();
-        final CalendarPane datePanel = new CalendarPane(CalendarPane.STYLE_CLASSIC);
+        final CalendarPane datePanel = new CalendarPane((Date)null, CalendarPane.STYLE_CLASSIC, new Locale("es", "cl"), timezone);
         datePanel.setLabel(field);
         datePanel.setShowNoneButton(allowClear);
         try {
@@ -177,8 +179,10 @@ public class KSwingTools {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Date d = datePanel.getDate();
+                System.out.println(d);
                 if (d != null) {
-                    field.setText(sdf.format(d));
+                    String text=sdf.format(d);
+                    field.setText(text);
                     menu.setVisible(false);
                 }
             }

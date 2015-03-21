@@ -111,8 +111,9 @@ public class KConfig extends javax.swing.JFrame {
      * @param defaults array de valores por defecto
      */
     public KConfig(String installPng, int pngWidth, int width, int height, boolean exit,
-            String title, String icon, String save, String cfgFile, int passIdx, int ksize,
+            String title, String icon, String save, File cfgFile, int passIdx, int ksize,
             String[] texts, String[] tooltips, Class[] types, Object[] defaults) {
+        
         this(cfgFile, ksize);
         this.exitOnClose = exit;
         if (values == null) {
@@ -152,7 +153,12 @@ public class KConfig extends javax.swing.JFrame {
             String[] options = new String[]{"OK", "Cancelar"};
             int option = JOptionPane.showOptionDialog(null, panel, "Acceso a configuración", JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[1]);
             char[] password = pass.getPassword();
-            if (option != 0 || (password != null && !Arrays.equals(password, (char[]) values[passIdx]))) {
+            if (option != 0) {
+                System.exit(-1);
+            }
+            if (password != null && !Arrays.equals(password, (char[]) values[passIdx])) {
+                //if (option != 0 || (password != null)){// && !Arrays.equals(password, (char[]) values[passIdx]))) {
+                JOptionPane.showMessageDialog(this, "Clave incorrecta", "Error de Acceso", JOptionPane.ERROR_MESSAGE);
                 System.exit(-1);
             }
         }
@@ -168,8 +174,8 @@ public class KConfig extends javax.swing.JFrame {
         }
     }
 
-    public KConfig(String cfgFile, int ksize) {
-        file = new File(cfgFile);
+    public KConfig(File file, int ksize) {
+        this.file=file;
         keySize = ksize;
         exitOnClose = true;
         if (file.exists()) {
@@ -277,6 +283,9 @@ public class KConfig extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        if (!file.getParentFile().exists()){
+            file.getParentFile().mkdirs();
+        }
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); ObjectOutputStream ois = new ObjectOutputStream(baos)) {
             ois.writeObject(values);
             byte[] buff = encrypt(IDMachine.mix(keySize), baos.toByteArray());

@@ -212,11 +212,13 @@ public class CalendarPane extends MicrobaComponent implements
      * @see #stripTime(Date, TimeZone, Locale)
      */
     public Date getDate() {
+        Date dt;
         if (this.stripTime) {
-            return stripTime(date, getZone(), getLocale());
+            dt=stripTime(date, getZone(), getLocale());
         } else {
-            return date;
+            dt=date;
         }
+        return dt;
     }
 
     /**
