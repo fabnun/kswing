@@ -179,7 +179,7 @@ public class KSwingTools {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Date d = datePanel.getDate();
-                System.out.println(d);
+                //System.out.println(d);
                 if (d != null) {
                     String text=sdf.format(d);
                     field.setText(text);

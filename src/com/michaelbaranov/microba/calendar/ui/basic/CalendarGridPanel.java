@@ -708,7 +708,7 @@ class CalendarGridPanel extends JPanel implements FocusListener,
                 setFocusedByIndex(row * 7 + col);
             }
         } else if (code == KeyEvent.VK_ESCAPE) {
-            System.out.println(getParent().getClass());
+            //System.out.println(getParent().getClass());
         }
     }
 
